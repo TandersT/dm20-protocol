@@ -25,6 +25,22 @@ _spec.loader.exec_module(hud)
 
 
 @pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("plain", "plain"),
+        ("Fire [red]ball[/]", r"Fire \[red]ball[/]"),
+        ("Acid Splash [boom", r"Acid Splash \[boom"),
+        ("stray [/] tag", r"stray \[/] tag"),
+        ("", ""),
+    ],
+)
+def test_markup_escape_neutralizes_open_brackets(text, expected):
+    # Escaping '[' alone prevents any stray ']' or '[/]' from opening a tag,
+    # which is what keeps campaign-controlled names from crashing the HUD.
+    assert hud.markup_escape(text) == expected
+
+
+@pytest.mark.parametrize(
     "score,expected",
     [(1, -5), (8, -1), (10, 0), (11, 0), (16, 3), (20, 5), (30, 10)],
 )

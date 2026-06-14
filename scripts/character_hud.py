@@ -48,6 +48,17 @@ PAGES = (
 # --------------------------------------------------------------------------
 
 
+def markup_escape(text: str) -> str:
+    """Neutralize Rich markup in campaign-controlled text.
+
+    Escaping ``[`` is sufficient: a stray ``]``, ``[/]``, or unbalanced ``[``
+    can no longer open a markup tag, so Textual/Rich never tries to parse it.
+    Applied everywhere campaign data flows into markup so a homebrew name with
+    a bracket can't crash the HUD.
+    """
+    return text.replace("[", r"\[")
+
+
 def ability_modifier(score: int) -> int:
     """D&D 5e ability modifier for a raw score."""
     return (score - 10) // 2
@@ -248,9 +259,6 @@ def build_app() -> type:
     from textual.containers import Horizontal, VerticalScroll
     from textual.widgets import Collapsible, ContentSwitcher, Footer, OptionList, Static
     from textual.widgets.option_list import Option
-
-    def markup_escape(text: str) -> str:
-        return text.replace("[", r"\[")
 
     def hp_bar(current: int, maximum: int, width: int = 24) -> str:
         fraction = hp_fraction(current, maximum)
@@ -608,7 +616,8 @@ def build_app() -> type:
                     self._spell_options[option_id] = spell
                     options.append(
                         Option(
-                            f"  {spell.get('name', '—')}  [dim]{spell.get('school', '')}[/]",
+                            f"  {markup_escape(spell.get('name', '—'))}  "
+                            f"[dim]{markup_escape(spell.get('school', ''))}[/]",
                             id=option_id,
                         )
                     )
@@ -651,8 +660,13 @@ def build_app() -> type:
             for source in sorted(by_source):
                 widgets.append(Static(markup_escape(source), classes="source-heading"))
                 for feature in by_source[source]:
-                    title = feature.get("name", "—")
-                    description = feature.get("description") or "[dim]no description[/dim]"
+                    title = markup_escape(feature.get("name", "—"))
+                    raw_description = feature.get("description")
+                    description = (
+                        markup_escape(raw_description)
+                        if raw_description
+                        else "[dim]no description[/dim]"
+                    )
                     widgets.append(
                         Collapsible(
                             Static(description),
