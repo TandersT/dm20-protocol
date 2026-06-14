@@ -2,6 +2,28 @@
 
 This directory contains utility scripts for the Gamemaster MCP project.
 
+## character_hud.py
+
+Live, paged character HUD for play sessions — a Textual TUI that shows the
+active campaign's hero (vitals, spells, features, inventory) and re-renders
+within ~1 s as dm20 saves state. Dependencies are declared inline (PEP 723),
+so `uv run` resolves them without touching the project environment.
+
+### Quick Start
+
+```bash
+# Story session in one tmux window, HUD in another:
+tmux new-window -n hud 'uv run scripts/character_hud.py'
+
+# Flags (all optional):
+uv run scripts/character_hud.py --storage-dir data --campaign "Curse of Strahd" --character Broden
+```
+
+Keys: `1`–`4` switch pages, `←`/`→` cycle pages, `c` cycles heroes,
+`q` quits. When `game_state.in_combat` is set, every page shows an
+initiative banner. Missing or mid-write campaign JSON never crashes the
+HUD — it keeps the last good render and recovers on the next 1 s poll.
+
 ## migrate_campaign.py
 
 Convert monolithic campaign files (single JSON) to the new split directory structure (multiple files).
