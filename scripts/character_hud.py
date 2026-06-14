@@ -106,6 +106,17 @@ def slot_pips(max_slots: int, used: int) -> str:
     return "●" * (max_slots - used) + "○" * used
 
 
+def spell_level_header(level: int, pips: str) -> str:
+    """Header label for a non-cantrip spell level in the Spells list.
+
+    ``pips`` is empty when the caster has no slot data for ``level`` (the
+    DM2-17 empty-``spell_slots`` case); fall back to a hint. The hint's
+    brackets are markup-escaped because Textual parses Option labels as Rich
+    markup and would otherwise silently swallow ``[no slot data]`` as a span.
+    """
+    return f"— Level {level} {pips or markup_escape('[no slot data]')} —"
+
+
 def resolve_storage_dir(flag: str | None) -> Path:
     """Storage dir: --storage-dir flag, then DM20_STORAGE_DIR env, then <repo>/data."""
     if flag:
@@ -608,7 +619,7 @@ def build_app() -> type:
                     header = "— Cantrips —"
                 else:
                     pips = slot_pips(max_slots.get(level, 0), used_slots.get(level, 0))
-                    header = f"— Level {level} {pips or '[no slot data]'} —"
+                    header = spell_level_header(level, pips)
                 options.append(Option(header, disabled=True))
                 for spell in sorted(by_level[level], key=lambda s: s.get("name", "")):
                     option_id = f"spell-{index}"

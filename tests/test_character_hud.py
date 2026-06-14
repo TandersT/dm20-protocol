@@ -113,7 +113,18 @@ def test_slot_pips_clamps_overspent_and_zero():
     assert hud.slot_pips(0, 0) == ""
 
 
-# ---------------------------------------------------------------- resolution
+def test_spell_level_header_shows_pips_when_available():
+    assert hud.spell_level_header(2, "●●○") == "— Level 2 ●●○ —"
+
+
+def test_spell_level_header_hint_survives_markup_when_no_slot_data():
+    # A caster with known spells but empty/zero slots (the DM2-17 case) yields
+    # no pips. The fallback hint's brackets must be markup-escaped, or Textual
+    # parses '[no slot data]' as a style span and silently swallows it — the
+    # header would render as "— Level 1  —" with no hint at all.
+    header = hud.spell_level_header(1, "")
+    assert r"\[no slot data]" in header
+    assert "no slot data" in header  # the words remain visible to the player
 
 
 def test_resolve_storage_dir_flag_wins(tmp_path, monkeypatch):
