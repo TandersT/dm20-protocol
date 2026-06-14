@@ -28,15 +28,15 @@ _spec.loader.exec_module(hud)
     "text,expected",
     [
         ("plain", "plain"),
-        ("Fire [red]ball[/]", r"Fire \[red]ball[/]"),
+        ("Fire [red]ball[/]", r"Fire \[red]ball\[/]"),
         ("Acid Splash [boom", r"Acid Splash \[boom"),
         ("stray [/] tag", r"stray \[/] tag"),
         ("", ""),
     ],
 )
 def test_markup_escape_neutralizes_open_brackets(text, expected):
-    # Escaping '[' alone prevents any stray ']' or '[/]' from opening a tag,
-    # which is what keeps campaign-controlled names from crashing the HUD.
+    # Escaping every '[' means no stray ']' or '[/]' can open a tag, which is
+    # what keeps campaign-controlled names from crashing the HUD's markup.
     assert hud.markup_escape(text) == expected
 
 
